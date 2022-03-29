@@ -30,7 +30,7 @@ const (
 	REPL_REF_FIGURE_REGEXP   = "\\\\@ref\\(fig:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 	REPL_REF_TABLE_REGEXP    = "\\\\@ref\\(table:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 	REPL_REF_CODE_REGEXP     = "\\\\@ref\\(code:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
-	CODE_LINE_NUM_REGEXP     = "\\s*\\\\@linenum\\s*```\\s*"
+    CODE_LINE_NUM_REGEXP     = "\\s*```[a-zA-Z_0-9가-핳\\s]*\\\\@linenum\\s*"
 )
 
 type Label struct {
@@ -283,7 +283,7 @@ func processAddLineNumsInCode(lines []string) {
 	for i := 1; i < len(lines); i++ {
 		matched, _ := regexp.MatchString(CODE_LINE_NUM_REGEXP, lines[i])
 		if matched {
-			lines[i] = "```\n"
+			lines[i] = lines[i][:strings.Index(lines[i], "\\@linenum")] + "\n"
 			numLines := countLines(lines, i+1)
 			insertLineNumbers(lines, i+1, numLines)
 		}
