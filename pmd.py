@@ -18,6 +18,7 @@ REPL_LABEL_CODE_REGEXP   = "\\\\@label\\(code:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9�
 REPL_REF_FIGURE_REGEXP   = "\\\\@ref\\(fig:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_REF_TABLE_REGEXP    = "\\\\@ref\\(table:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_REF_CODE_REGEXP     = "\\\\@ref\\(code:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
+CODE_LINE_NUM_REGEXP     = "\\s*\\\\@linenum\\s*```\\s*"
 
 class Label:
     def __init__(self, name, replStr, regExp, replRegExp, refRegExp, replRefRegExp):
@@ -175,6 +176,40 @@ def processReplaceReferences(lines, chapterNumStr, labelList):
             if line != lines[i]:
                 lines[i] = line
 
+def countLines(lines, startLineIdx):
+    count = 0
+    while startLineIdx < len(lines):
+        line = lines[startLineIdx].strip()
+        if line == "```":
+            break
+        count += 1
+        startLineIdx += 1
+    return count
+
+def getNumLength(n):
+    count = 1
+    while n // 10 > 0:
+        count = count + 1
+        n = n // 10
+    return count
+
+def insertLineNumbers(lines, startLineIdx, numLines):
+    numLen = getNumLength(numLines)
+    fmt = "{:0" + str(numLen) + "d}"
+    count = 1
+    for i in range(startLineIdx, startLineIdx + numLines):
+        f = fmt.format(count)
+        lines[i] = f + "    " + lines[i]
+        count += 1
+
+def processAddLineNumsInCode(lines):
+    for i in range(1, len(lines)):
+        m = re.match(CODE_LINE_NUM_REGEXP, lines[i])
+        if m:
+            lines[i] = "```\n"
+            numLines = countLines(lines, i + 1)
+            insertLineNumbers(lines, i + 1, numLines)
+
 def writeNewFile(filename, lines, startFromFirstLine):
     if startFromFirstLine:
         start = 0
@@ -216,4 +251,5 @@ if __name__ == "__main__":
     labelList = createLabelList()
     processAddLabels(lines, chapterNumStr, labelList)
     processReplaceReferences(lines, chapterNumStr, labelList)
+    processAddLineNumsInCode(lines)
     writeNewFile(newFileName, lines, chapterNumStr == "")

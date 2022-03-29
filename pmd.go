@@ -30,6 +30,7 @@ const (
 	REPL_REF_FIGURE_REGEXP   = "\\\\@ref\\(fig:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 	REPL_REF_TABLE_REGEXP    = "\\\\@ref\\(table:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 	REPL_REF_CODE_REGEXP     = "\\\\@ref\\(code:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
+	CODE_LINE_NUM_REGEXP     = "\\s*\\\\@linenum\\s*```\\s*"
 )
 
 type Label struct {
@@ -243,6 +244,52 @@ func addChapterAndSectionNumber(lines []string, chapterNumStr string) {
 	}
 }
 
+func countLines(lines []string, startLineIdx int) int {
+	count := 0
+	for startLineIdx < len(lines) {
+		line := strings.TrimSpace(lines[startLineIdx])
+		if line == "```" {
+			break
+		}
+		count += 1
+		startLineIdx += 1
+	}
+	return count
+}
+
+func getNumLength(n int) int {
+	count := 1
+	for n/10 > 0 {
+		count = count + 1
+		n = n / 10
+	}
+	return count
+
+}
+
+func insertLineNumbers(lines []string, startLineIdx int, numLines int) {
+	numLen := getNumLength(numLines)
+
+	//    fmt = "{:0" + str(numLen) + "d}"
+	count := 1
+	for i := startLineIdx; i < startLineIdx+numLines; i++ {
+		f := fmt.Sprintf("%0*d", numLen, count)
+		lines[i] = f + "    " + lines[i]
+		count += 1
+	}
+}
+
+func processAddLineNumsInCode(lines []string) {
+	for i := 1; i < len(lines); i++ {
+		matched, _ := regexp.MatchString(CODE_LINE_NUM_REGEXP, lines[i])
+		if matched {
+			lines[i] = "```\n"
+			numLines := countLines(lines, i+1)
+			insertLineNumbers(lines, i+1, numLines)
+		}
+	}
+}
+
 func main() {
 	newFileName := ""
 	if len(os.Args) < 2 {
@@ -279,5 +326,6 @@ func main() {
 	addChapterAndSectionNumber(lines, chapterNumStr)
 	processAddLabels(lines, chapterNumStr, labels)
 	processReplaceReferences(lines, chapterNumStr, labels)
+	processAddLineNumsInCode(lines)
 	_ = writeNewFile(newFileName, lines, chapterNumStr == "")
 }
