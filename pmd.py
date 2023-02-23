@@ -1,5 +1,8 @@
 # Written by Yongjoo Cho
-# Last modified 3/29/2022
+# Last modified 2/23/2023
+
+# 실행 결과 처리 추가
+#
 
 import re
 import sys
@@ -9,16 +12,20 @@ CHAPTER_REGEXP=r"(?<=\@label\(chapter:)(\s[0-9]+)(?=\))"
 LABEL_FIGURE_REGEXP      = "(\\\\@label\\(fig:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
 LABEL_TABLE_REGEXP       = "(\\\\@label\\(table:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
 LABEL_CODE_REGEXP        = "(\\\\@label\\(code:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
+LABEL_RESULT_REGEXP      = "(\\\\@label\\(result:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
 REF_FIGURE_REGEXP        = "(\\\\@ref\\(fig:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
 REF_TABLE_REGEXP         = "(\\\\@ref\\(table:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
 REF_CODE_REGEXP          = "(\\\\@ref\\(code:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
+REF_RESULT_REGEXP          = "(\\\\@ref\\(result:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
 REPL_LABEL_FIGURE_REGEXP = "\\\\@label\\(fig:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_LABEL_TABLE_REGEXP  = "\\\\@label\\(table:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_LABEL_CODE_REGEXP   = "\\\\@label\\(code:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
+REPL_LABEL_RESULT_REGEXP   = "\\\\@label\\(result:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_REF_FIGURE_REGEXP   = "\\\\@ref\\(fig:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_REF_TABLE_REGEXP    = "\\\\@ref\\(table:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_REF_CODE_REGEXP     = "\\\\@ref\\(code:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
-CODE_LINE_NUM_REGEXP     = "\\s*```[a-zA-Z_0-9가-핳\\s]*\\\\@linenum\\s*"
+REPL_REF_RESULT_REGEXP     = "\\\\@ref\\(result:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
+CODE_LINE_NUM_REGEXP     = r"\s*```[a-zA-Z_0-9가-핳\s]*\\\\@linenum\s*"
 
 class Label:
     def __init__(self, name, replStr, regExp, replRegExp, refRegExp, replRefRegExp):
@@ -160,6 +167,8 @@ def createLabelList():
                      REF_TABLE_REGEXP, REPL_REF_TABLE_REGEXP))
     lst.append(Label("code", "코드 ", LABEL_CODE_REGEXP, REPL_LABEL_CODE_REGEXP,
                      REF_CODE_REGEXP, REPL_REF_CODE_REGEXP))
+    lst.append(Label("result", "실행 결과 ", LABEL_RESULT_REGEXP, REPL_LABEL_RESULT_REGEXP,
+                     REF_RESULT_REGEXP, REPL_REF_RESULT_REGEXP))
     return lst
 
 def processAddLabels(lines, chapterNumStr, labelList):
@@ -204,9 +213,10 @@ def insertLineNumbers(lines, startLineIdx, numLines):
 
 def processAddLineNumsInCode(lines):
     for i in range(1, len(lines)):
-        m = re.match(CODE_LINE_NUM_REGEXP, lines[i])
+        line = lines[i].strip()
+        m = re.match(CODE_LINE_NUM_REGEXP, line)
         if m:
-            lines[i] = lines[i][:lines[i].index("\\@linenum")] + "\n"
+            lines[i] = line[:line.index("\\@linenum")] + "\n"
             numLines = countLines(lines, i + 1)
             insertLineNumbers(lines, i + 1, numLines)
 
@@ -222,17 +232,22 @@ def writeNewFile(filename, lines, startFromFirstLine):
 def addChapterAndSectionNumber(lines, chapterNumStr):
     global sectionNumber
 
+    inCodeSection = False  # 코드 영역 안에 있는지 확인하기 위함
+
     for i in range(len(lines)):
         line = lines[i]
         line = line.strip()
-        if "## " in line and line.index("## ") == 0:
-            line = line[:3] + chapterNumStr[:-1] + "." + str(sectionNumber) + " " + line[3:]
-            lines[i] = line
-            sectionNumber += 1
-        elif "# " in line and line.index("# ") == 0:
-            line = line.strip()
-            line = line[:2] + chapterNumStr[:-1] + ". " + line[2:]
-            lines[i] = line
+        if line.count("```") % 2 == 1:
+            inCodeSection = not inCodeSection
+        if inCodeSection == False:
+            if "## " in line and line.index("## ") == 0:
+                line = line[:3] + chapterNumStr[:-1] + "." + str(sectionNumber) + " " + line[3:]
+                lines[i] = line
+                sectionNumber += 1
+            elif "# " in line and line.index("# ") == 0:
+                line = line.strip()
+                line = line[:2] + chapterNumStr[:-1] + ". " + line[2:]
+                lines[i] = line
 
 if __name__ == "__main__":
     newFileName = ""
