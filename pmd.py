@@ -1,8 +1,7 @@
 # Written by Yongjoo Cho
-# Last modified 2/23/2023
+# Last modified 2/24/2023
 
 # 실행 결과 처리 추가
-#
 
 import re
 import sys
@@ -131,7 +130,7 @@ def replaceReferences(line, lineNum, chapterNumStr, label): #labels, labelName, 
             elif matchedIterator2:
                 line = correctPostposition(line, subStr)
         else:
-            print(f"Error:{lineNum}:{m} is not in {labelName} labels")
+            print(f"Error:{lineNum}:{m} is not in labels")
     return line
 
 def addLabels(line, lineNum, chapterNumStr, label): #labels, labelName, counter, replStr, regexp, replRegExp):
