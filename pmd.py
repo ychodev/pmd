@@ -24,7 +24,7 @@ REPL_REF_FIGURE_REGEXP   = "\\\\@ref\\(fig:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-�
 REPL_REF_TABLE_REGEXP    = "\\\\@ref\\(table:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_REF_CODE_REGEXP     = "\\\\@ref\\(code:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
 REPL_REF_RESULT_REGEXP     = "\\\\@ref\\(result:\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*\\)"
-CODE_LINE_NUM_REGEXP     = r"\s*```[a-zA-Z_0-9가-핳\s]*\\\\@linenum\s*"
+CODE_LINE_NUM_REGEXP     = r"[>\s]*```[a-zA-Z_0-9가-핳\s]*\\\\@linenum\s*"
 
 class Label:
     def __init__(self, name, replStr, regExp, replRegExp, refRegExp, replRefRegExp):
@@ -215,7 +215,7 @@ def processAddLineNumsInCode(lines):
         line = lines[i].strip()
         m = re.match(CODE_LINE_NUM_REGEXP, line)
         if m:
-            lines[i] = line[:line.index("\\@linenum")] + "\n"
+            lines[i] = line[:line.index("\\\\@linenum")] + "\n"
             numLines = countLines(lines, i + 1)
             insertLineNumbers(lines, i + 1, numLines)
 
