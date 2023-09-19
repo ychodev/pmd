@@ -1,12 +1,13 @@
 # Written by Yongjoo Cho
-# Last modified 2/24/2023
+# Last modified 7/03/2023
+# Chapter 또는 chapter tag 사용 가능
 
 # 실행 결과 처리 추가
 
 import re
 import sys
 
-CHAPTER_REGEXP=r"(?<=\@label\(chapter:)(\s[0-9]+)(?=\))"
+CHAPTER_REGEXP=r"(?<=\@label\([c|C]hapter:)(\s[0-9]+)(?=\))"
 #영문/한글/숫자 캡션 가능
 LABEL_FIGURE_REGEXP      = "(\\\\@label\\(fig:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
 LABEL_TABLE_REGEXP       = "(\\\\@label\\(table:)(\\s*[a-zA-Z_가-핳]+[a-zA-Z_0-9가-핳]*\\s*)(\\))"
