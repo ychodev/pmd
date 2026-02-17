@@ -124,7 +124,7 @@ def findChapterNum(line):
 def correctPostposition(line, subStr):
     eunList = [ '0', '1', '3', '6', '7', '8' ]
     neunList = [ '2', '4', '5', '9' ]
-    print(subStr, line)
+#    print(subStr, line)
     postposition = subStr[-1]  # 마지막 숫자를 확인
     replSubStr = "\\[" + subStr + "\\]"
     newSubStr = "[" + subStr + "]"
@@ -281,7 +281,8 @@ def insertLineNumbersInTextBox(lines, startLineIdx, numLines):
 
 def processAddLineNumsInCode(lines):
     codeOpen = False
-    for i in range(1, len(lines)):
+    i = 1;
+    while i < len(lines):
         line = lines[i].strip()
         if codeOpen == True and line == "```":
             lines[i] = line + "\n"
@@ -295,20 +296,37 @@ def processAddLineNumsInCode(lines):
                     lines[i] = "```\n"
                     numLines = countLines(lines, i + 1)
                     insertLineNumbers(lines, i + 1, numLines)
-
+                    i += numLines
+                    continue
+            else: # \\@nolinenum is set
+                codeOpen = True
+                lines[i] == "```\n" # line에서 \\@nolinenum 제거
+                numLines = countLines(lines, i + 1)
+                i += numLines;
+                continue
+        i += 1
+                    
 def processAddLineNumsInTextBoxCode(lines):
-    for i in range(1, len(lines)):
+    i = 1
+    while i < len(lines):
         line = lines[i].strip()
         m = re.match(TEXT_BOX_CODE_NO_LINE_NUM_REGEXP, line)
         if m:
             lines[i] = line[:line.find("\\\\@nolinenum")] + "\n"
+            numLines = countLinesInTextBox(lines, i + 1)
+            i += numLines
+            continue           
+#            print(f"i + 1: {i + 1}, numLines: {numLines}")
+#            insertLineNumbersInTextBox(lines, i + 1, numLines)
         m2 = re.match(TEXT_BOX_CODE_LINE_NUM_REGEXP, line)
         #m3 = re.match(TEXT_BOX_CODE_REGEXP, line)        
         if m2:
             lines[i] = line[:line.find("\\\\@linenum")] + "\n"               
             numLines = countLinesInTextBox(lines, i + 1)
-            print(f"i + 1: {i + 1}, numLines: {numLines}")
+#            print(f"i + 1: {i + 1}, numLines: {numLines}")
             insertLineNumbersInTextBox(lines, i + 1, numLines)
+            i += numLines
+        i += 1
 
 def writeNewFile(filename, lines, startFromFirstLine):
     if startFromFirstLine:
