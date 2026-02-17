@@ -129,27 +129,45 @@ def correctPostposition(line, subStr):
     replSubStr = "\\[" + subStr + "\\]"
     newSubStr = "[" + subStr + "]"
     if postposition in eunList:
-        line = re.sub(replSubStr + "\\s*는", newSubStr + "은", line)
-        line = re.sub(replSubStr + "\\s*은", newSubStr + "은", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*와", newSubStr + "과", line)
-        line = re.sub(replSubStr + "\\s*과", newSubStr + "과", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*를", newSubStr + "을", line)
-        line = re.sub(replSubStr + "\\s*을", newSubStr + "을", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*가", newSubStr + "이", line)
-        line = re.sub(replSubStr + "\\s*이", newSubStr + "이", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*나", newSubStr + "이나", line)
-        line = re.sub(replSubStr + "\\s*이나", newSubStr + "이나", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*는 ", newSubStr + "은 ", line)
+        line = re.sub(replSubStr + "\\s*은 ", newSubStr + "은 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*와 ", newSubStr + "과 ", line)
+        line = re.sub(replSubStr + "\\s*과 ", newSubStr + "과 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*를 ", newSubStr + "을 ", line)
+        line = re.sub(replSubStr + "\\s*을 ", newSubStr + "을 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*가 ", newSubStr + "이 ", line)
+        line = re.sub(replSubStr + "\\s*이 ", newSubStr + "이 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*나 ", newSubStr + "이나 ", line)
+        line = re.sub(replSubStr + "\\s*이나 ", newSubStr + "이나 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*나 ", newSubStr + "이나 ", line)
+        line = re.sub(replSubStr + "\\s*이나 ", newSubStr + "이나 ", line)  # 공백 제거
     elif postposition in neunList:
-        line = re.sub(replSubStr + "\\s*은", newSubStr + "는", line)
-        line = re.sub(replSubStr + "\\s*는", newSubStr + "는", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*과", newSubStr + "와", line)
-        line = re.sub(replSubStr + "\\s*와", newSubStr + "와", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*을", newSubStr + "를", line)
-        line = re.sub(replSubStr + "\\s*를", newSubStr + "를", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*이", newSubStr + "가", line)
-        line = re.sub(replSubStr + "\\s*가", newSubStr + "가", line)  # 공백 제거
-        line = re.sub(replSubStr + "\\s*이나", newSubStr + "나", line)
-        line = re.sub(replSubStr + "\\s*가", newSubStr + "가", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*은 ", newSubStr + "는 ", line)
+        line = re.sub(replSubStr + "\\s*는 ", newSubStr + "는 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*과 ", newSubStr + "와 ", line)
+        line = re.sub(replSubStr + "\\s*와 ", newSubStr + "와 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*을 ", newSubStr + "를 ", line)
+        line = re.sub(replSubStr + "\\s*를 ", newSubStr + "를 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*이 ", newSubStr + "가 ", line)
+        line = re.sub(replSubStr + "\\s*가 ", newSubStr + "가 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*이나 ", newSubStr + "나 ", line)
+        line = re.sub(replSubStr + "\\s*가 ", newSubStr + "가 ", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*이나 ", newSubStr + "나 ", line)
+        line = re.sub(replSubStr + "\\s*가 ", newSubStr + "가 ", line)  # 공백 제거
+    return line
+
+def correctPostposition2(line, subStr):
+    euroList = [ '0', '3', '6' ]
+    roList = [ '1', '2', '4', '5', '7', '8', '9' ]
+    postposition = subStr[-1]  # 마지막 숫자를 확인
+    replSubStr = "\\[" + subStr + "\\]"
+    newSubStr = "[" + subStr + "]"
+    if postposition in euroList:
+        line = re.sub(replSubStr + "\\s*로 ", newSubStr + "으로 ", line)
+        line = re.sub(replSubStr + "\\s*으로 ", newSubStr + "으로 ", line)  # 공백 제거
+    elif postposition in roList:
+        line = re.sub(replSubStr + "\\s*으로 ", newSubStr + "로 ", line)
+        line = re.sub(replSubStr + "\\s*로 ", newSubStr + "로 ", line)  # 공백 제거
     return line
 
 def replaceReferences(line, lineNum, chapterNumStr, label): #labels, labelName, regexp, replRegExp):
@@ -167,14 +185,22 @@ def replaceReferences(line, lineNum, chapterNumStr, label): #labels, labelName, 
             line = re.sub(refRegExp, newSubStr, line)
 #            print(line)
             replSubStr = "\\[" + subStr + "\\]"
-            matchedIterator = True
-            postpositionList = [ "\\s*는", "\\s*은", "\\s*와", "\\s*과", "\\s*을", "\\s*를", "\\s*가", "\\s*이", "\\s*나", "\\s*이나" ]
+            matchedIterator = False
+            postpositionList = [ "\\s*는 ", "\\s*은 ", "\\s*와 ", "\\s*과 ", "\\s*을 ", "\\s*를 ", "\\s*가 ", "\\s*이 ", "\\s*나 ", "\\s*이나 " ]
             for postposition in postpositionList:
                 matchedIterator = matchedIterator or re.findall(replSubStr + postposition, line)
-                if matchedIterator == False:
-                    break
+                if matchedIterator == True:
+                    break                  
             if matchedIterator:
                 line = correctPostposition(line, subStr)
+            else:            
+                postpositionList2 = [ "\\s*로 ", "\\s*으로 " ]
+                for postposition in postpositionList2:
+                    matchedIterator = matchedIterator or re.findall(replSubStr + postposition, line)
+                    if matchedIterator == True:
+                        break                  
+                if matchedIterator:
+                    line = correctPostposition2(line, subStr)
         else:
             print(f"Error:{lineNum}:{m} is not in labels")
     return line
