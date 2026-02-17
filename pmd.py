@@ -1,6 +1,7 @@
 # Written by Yongjoo Cho
-# Last modified 2/16/2026
+# Last modified 2/17/2026
 
+# 2/17/26 '이', '가', '나', '이나'로 끝날 때 처리 코드 추가
 # 2/16/26 번호 앞뒤로 [] 추가
 # 2/16/26 을/를 처리 코드 추가.
 # 9/19/23 코드의 \\@linenum이 > 뒤에 나올 때 처리 가능
@@ -122,7 +123,8 @@ def findChapterNum(line):
 
 def correctPostposition(line, subStr):
     eunList = [ '0', '1', '3', '6', '7', '8' ]
-    neunList = [ '2', '4', '5', '9' ]    
+    neunList = [ '2', '4', '5', '9' ]
+    print(subStr, line)
     postposition = subStr[-1]  # 마지막 숫자를 확인
     replSubStr = "\\[" + subStr + "\\]"
     newSubStr = "[" + subStr + "]"
@@ -133,6 +135,10 @@ def correctPostposition(line, subStr):
         line = re.sub(replSubStr + "\\s*과", newSubStr + "과", line)  # 공백 제거
         line = re.sub(replSubStr + "\\s*를", newSubStr + "을", line)
         line = re.sub(replSubStr + "\\s*을", newSubStr + "을", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*가", newSubStr + "이", line)
+        line = re.sub(replSubStr + "\\s*이", newSubStr + "이", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*나", newSubStr + "이나", line)
+        line = re.sub(replSubStr + "\\s*이나", newSubStr + "이나", line)  # 공백 제거
     elif postposition in neunList:
         line = re.sub(replSubStr + "\\s*은", newSubStr + "는", line)
         line = re.sub(replSubStr + "\\s*는", newSubStr + "는", line)  # 공백 제거
@@ -140,6 +146,10 @@ def correctPostposition(line, subStr):
         line = re.sub(replSubStr + "\\s*와", newSubStr + "와", line)  # 공백 제거
         line = re.sub(replSubStr + "\\s*을", newSubStr + "를", line)
         line = re.sub(replSubStr + "\\s*를", newSubStr + "를", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*이", newSubStr + "가", line)
+        line = re.sub(replSubStr + "\\s*가", newSubStr + "가", line)  # 공백 제거
+        line = re.sub(replSubStr + "\\s*이나", newSubStr + "나", line)
+        line = re.sub(replSubStr + "\\s*가", newSubStr + "가", line)  # 공백 제거
     return line
 
 def replaceReferences(line, lineNum, chapterNumStr, label): #labels, labelName, regexp, replRegExp):
@@ -157,13 +167,14 @@ def replaceReferences(line, lineNum, chapterNumStr, label): #labels, labelName, 
             line = re.sub(refRegExp, newSubStr, line)
 #            print(line)
             replSubStr = "\\[" + subStr + "\\]"
-            matchedIterator = re.findall(replSubStr + "\\s*는", line) or re.findall(replSubStr + "\\s*와", line)
-            matchedIterator2 = re.findall(replSubStr + "\\s*은", line) or re.findall(replSubStr + "\\s*과", line)
-            matchedIterator3 = re.findall(replSubStr + "\\s*을", line) or re.findall(replSubStr + "\\s*를", line)
-            if matchedIterator or matchedIterator2 or matchedIterator3:
+            matchedIterator = True
+            postpositionList = [ "\\s*는", "\\s*은", "\\s*와", "\\s*과", "\\s*을", "\\s*를", "\\s*가", "\\s*이", "\\s*나", "\\s*이나" ]
+            for postposition in postpositionList:
+                matchedIterator = matchedIterator or re.findall(replSubStr + postposition, line)
+                if matchedIterator == False:
+                    break
+            if matchedIterator:
                 line = correctPostposition(line, subStr)
-#            elif matchedIterator2:
-#                line = correctPostposition(line, subStr)
         else:
             print(f"Error:{lineNum}:{m} is not in labels")
     return line
